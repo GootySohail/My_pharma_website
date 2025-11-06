@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PharmaCare — Health & Wellness</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Google Charts loader for Sheets -->
+  <script src="https://www.gstatic.com/charts/loader.js"></script>
+
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      margin:0; padding:0; background:#f6f5ff;
+      color:#333;
+    }
+
+    .container { max-width:1200px; margin:auto; padding:0 15px; }
+
+    header {
+      background: linear-gradient(90deg, #8206ef, #4a00e0);
+      color:white;
+      padding:15px 0;
+    }
+    .logo { font-size:1.6rem; margin-right:10px; }
+    nav ul { display:flex; gap:25px; list-style:none; margin:0; padding:0; }
+    nav ul li a { color:white; text-decoration:none; font-weight:500; transition:0.3s; }
+    nav ul li a:hover, nav ul li a.active { color:#ffccf9; }
+
+    .hero {
+      text-align:center; padding:70px 20px;
+      background: linear-gradient(to right, #9105ef, #f7057e);
+      color:white; 
+    }
+    .hero h1 { font-size:3rem; margin-bottom:15px; font-weight:700; color: #f6f5ff; }
+    .hero p { font-size:1.2rem; margin-bottom:30px; color: #f6f5ff;}
+
+    .btn {
+      display:inline-block; margin:5px; padding:12px 25px;
+      background: linear-gradient(90deg,#8e2de2,#f003ec);
+      color:white; text-decoration:none; border-radius:50px;
+      font-weight:600; transition:0.4s; box-shadow:0 4px 15px rgba(0,0,0,0.1);
+    }
+    .btn:hover { background: linear-gradient(90deg,#f003ec,#8e2de2); transform:translateY(-2px); }
+
+    .product-section { padding:50px 0; }
+    .product-section h2 { text-align:center; color:#8e2de2; margin-bottom:40px; font-weight:700; font-size:2rem; }
+
+    .product-grid {
+      display:flex; flex-wrap:wrap; gap:30px; justify-content:center;
+    }
+
+    .card {
+      border-radius:20px; background:white; 
+      box-shadow:0 8px 25px rgba(0,0,0,0.1);
+      width:240px; text-align:center; padding:20px; transition:0.4s;
+    }
+    .card:hover {
+      transform:translateY(-10px); box-shadow:0 12px 35px rgba(0,0,0,0.2);
+    }
+
+    .card img { width:100%; height:160px; object-fit:cover; border-radius:15px; margin-bottom:15px; }
+
+    .card h2 { font-size:1.3rem; margin:10px 0 8px; color:#6f07d7; font-weight:700; }
+    .card p { font-size:1rem; margin-bottom:10px; color:#555; }
+    .card strong { font-size:1.1rem; display:block; margin-bottom:12px; color:#333; }
+
+    .about, .contact { padding:40px 20px; text-align:center; }
+    .about h2, .contact h2 { color:#97137f; margin-bottom:20px; font-size:2rem; font-weight:700; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container" style="display:flex; align-items:center; justify-content:space-between;">
+    <div style="display:flex; align-items:center;">
+      <div class="logo">🌿</div>
+      <span style="font-weight:600; font-size:1.3rem;">PharmaCare</span>
+    </div>
+    <nav>
+      <ul id="mainNav">
+        <li><a href="#home" class="active">Home</a></li>
+        <li><a href="#products">Products</a></li>
+        <li><a href="#about">About Us</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <section id="home" class="hero">
+    <h1>Your Trusted Pharmaceutical Partner</h1>
+    <p>Easily customize our inventory and information—supporting wellness, health, and care for everyone.</p>
+    <a href="#products" class="btn">View Products</a>
+    <a href="#about" class="btn">Learn More</a>
+  </section>
+
+  <section id="products" class="product-section">
+    <h2>Featured Pharmaceutical Products</h2>
+    <div class="product-grid" id="productContainer"></div>
+  </section>
+
+  <section id="about" class="about">
+    <h2>About PharmaCare</h2>
+    <p>Founded in <strong>2015</strong>, PharmaCare provides reliable, high-quality pharmaceutical products.</p>
+  </section>
+
+  <section id="contact" class="contact">
+    <h2>Contact Us <br>1234567890</h2>
+    <a href="mailto:info@pharmacare.com" class="btn">📧 info@pharmacare.com</a>
+  </section>
+</main>
+
+<script>
+  google.charts.load('current', { packages: ['corechart','table'] });
+
+  function getProductsFromSheet() {
+    const sheetId = '1Rrd0NIg3j2BNu56rzEIMIe8v9uusHc-jnPtUcimPH6I';
+    const sheetName = 'product_info';
+    const query = encodeURIComponent('SELECT A,B,C,D,E');
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}&tq=${query}`;
+    const qObj = new google.visualization.Query(url);
+    qObj.send(handleQuery);
+  }
+
+  function handleQuery(response) {
+    if (response.isError()) {
+      console.error('Error fetching sheet: ', response.getMessage());
+      return;
+    }
+    const data = response.getDataTable();
+    const container = document.getElementById('productContainer');
+    container.innerHTML = '';
+
+    for (let i = 0; i < data.getNumberOfRows(); i++) {
+      const name = data.getValue(i, 0);
+      const desc = data.getValue(i, 1);
+      let img = data.getValue(i, 2);
+      const price = data.getValue(i, 3);
+      const link = data.getValue(i, 4);
+
+      if (!img) img = 'https://via.placeholder.com/240x160?text=No+Image';
+
+      if (img.includes("drive.google.com")) {
+        const fileIdMatch = img.match(/\/d\/(.*?)\//) || img.match(/id=(.*?)$/);
+        if (fileIdMatch && fileIdMatch[1]) {
+          img = `https://drive.google.com/uc?export=view&id=${fileIdMatch[1]}`;
+        }
+      }
+
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <img src="${img}" alt="${name}" onerror="this.src='https://via.placeholder.com/240x160?text=No+Image'">
+        <h2>${name}</h2>
+        <p>${desc}</p>
+        <strong>₹${price}</strong>
+        <a class="btn" href="${link}" target="_blank">Buy Now</a>
+        <a class="btn" href="${link}" target="_blank">Learn More</a>
+      `;
+      container.appendChild(card);
+    }
+  }
+
+  document.querySelectorAll("a[href='#products']").forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      getProductsFromSheet();
+      document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  window.onload = getProductsFromSheet;
+</script>
+
+</body>
+</html>
